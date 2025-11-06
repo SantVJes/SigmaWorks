@@ -1,0 +1,497 @@
+openapi: 3.0.3
+
+info:
+  title: Sigma Works API
+  version: 0.0.1
+  description: |
+    API del sistema **Sigma Works CRM**, desarrollada para pequeñas y medianas empresas.  
+    En esta primera fase, la API integra los servicios de **gestión de proveedores** y **autenticación (login)** dentro de una misma estructura monolítica, con el propósito de simplificar el arranque del proyecto.  
+  
+    A futuro, la plataforma evolucionará hacia una **arquitectura basada en microservicios**, donde cada módulo (por ejemplo, autenticación, proveedores, clientes, ventas o facturación) contará con su propia API especializada, independiente y escalable.  
+    
+    Este enfoque permitirá una mejor mantenibilidad, despliegue individual y expansión progresiva del sistema.
+  contact:
+    name: Soporte API
+    email: soporte@tuservicio.com
+    url: https://tuservicio.com
+servers:
+  - url: https://api.tuservicio.com/v1
+    description: Servidor de producción
+  - url: http://localhost:8080/v1
+    description: Servidor local para pruebas
+  
+tags:
+  - name: Proveedores
+    description: Operaciones relacionadas con la gestión de proveedores.
+
+paths:
+  /providers:
+    get:
+      tags:
+        - Proveedores
+      summary: Obtener lista de proveedores
+      description: Recupera una lista de todos los proveedores registrados en el sistema.
+      responses:
+        '200':
+          description: Lista de proveedores obtenida exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Provider'
+        '204':
+          description: La solicitud tuvo éxito, pero no hay contenido para devolver.
+        '400':
+          description: Parámetros de consulta inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: No autorizado. Se requiere autenticación.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Recurso no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Demasiadas solicitudes. Espere antes de intentar de nuevo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags:
+        - Proveedores
+      summary: Crear un nuevo proveedor
+      description: Agrega un nuevo proveedor al sistema con la información proporcionada.
+      requestBody:
+        description: Datos del proveedor a crear.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProviderInput'
+      responses:
+        '201':
+          description: Proveedor creado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Provider'
+        '400':
+          description: Datos de entrada inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflicto. El proveedor ya existe.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Error de validación en los datos enviados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /providers/{id}:
+    get:
+      tags:
+        - Proveedores
+      summary: Obtener un proveedor por ID
+      description: Recupera la información detallada de un proveedor específico por su identificador único.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del proveedor.
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Proveedor obtenido exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Provider'
+        '404':
+          description: Recurso no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - Proveedores
+      summary: Actualizar un proveedor (reemplazo completo)
+      description: Modifica enteramente un proveedor existente. Todos los campos deben ser enviados.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del proveedor a actualizar.
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProviderInput'
+      responses:
+        '200':
+          description: Proveedor actualizado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Provider'
+        '400':
+          description: Datos inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Recurso no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      tags:
+        - Proveedores
+      summary: Actualización parcial de un proveedor
+      description: Permite modificar uno o varios campos específicos de un proveedor existente.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID del proveedor a modificar parcialmente.
+          schema:
+            type: integer
+      requestBody:
+        description: Campos a actualizar del proveedor. Se pueden enviar uno o varios de los definidos en ProviderInput.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProviderInput'
+      responses:
+        '200':
+          description: Proveedor actualizado parcialmente con éxito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Provider'
+        '400':
+          description: Datos inválidos o formato incorrecto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Recurso no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /providers/{nom_proveedor}:
+    get:
+      tags:
+        - Proveedores
+      summary: Buscar proveedor por nombre
+      description: Recupera la información de un proveedor utilizando su nombre.
+      parameters:
+        - name: nom_proveedor
+          in: path
+          required: true
+          description: Nombre del proveedor (sensible a mayúsculas/minúsculas).
+          schema:
+            type: string
+            example: "Dicer"
+      responses:
+        '200':
+          description: Proveedor obtenido exitosamente por nombre.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Provider'
+        '404':
+          description: Proveedor no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /providers/product/{id_producto}:
+    get:
+      tags:
+        - Proveedores
+      summary: Buscar proveedores por producto
+      description: Recupera una lista de proveedores asociados a un producto específico mediante su ID de producto.
+      parameters:
+        - name: id_producto
+          in: path
+          required: true
+          description: ID del producto asociado al proveedor.
+          schema:
+            type: integer
+            example: 10
+      responses:
+        '200':
+          description: Lista de proveedores asociados al producto obtenida exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Provider'
+        '404':
+          description: No se encontraron proveedores asociados a ese producto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /providers/status/{activo}:
+    get:
+      tags:
+        - Proveedores
+      summary: Buscar proveedores por estado activo/inactivo
+      description: Recupera una lista de proveedores filtrados por su estado actual (activos o inactivos).
+      parameters:
+        - name: activo
+          in: path
+          required: true
+          description: Estado del proveedor (true = activo, false = inactivo).
+          schema:
+            type: boolean
+            example: true
+      responses:
+        '200':
+          description: Lista de proveedores obtenida exitosamente según su estado.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Provider'
+        '404':
+          description: No se encontraron proveedores con ese estado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: No autorizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /providers/search:
+    get:
+      tags:
+        - Proveedores
+      summary: Búsqueda avanzada de proveedores
+      description: Permite buscar proveedores por múltiples criterios combinados.
+      parameters:
+        - name: nom_clie
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "Dicer"
+        - name: min_precio
+          in: query
+          required: false
+          schema:
+            type: number
+            example: 1000
+        - name: max_precio
+          in: query
+          required: false
+          schema:
+            type: number
+            example: 3000
+        - name: activo
+          in: query
+          required: false
+          schema:
+            type: boolean
+            example: true
+      responses:
+        '200':
+          description: Lista filtrada de proveedores según los criterios.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Provider'
+        '400':
+          description: Parámetros de búsqueda inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '204':
+          description: No se encontraron resultados para los filtros aplicados.
+        '500':
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Provider:
+      type: object
+      properties:
+        id_proveedor:
+          type: integer
+          example: 1
+        id_producto:
+          type: integer
+          example: 10
+        nom_proveedor:
+          type: string
+          example: "Dicer"
+        precio_proveedor:
+          type: number
+          format: float
+          example: 1500.50
+        fecha_create:
+          type: string
+          format: date-time
+          example: "2025-11-05T10:30:00Z"
+        fecha_update:
+          type: string
+          format: date-time
+          example: "2025-11-05T10:45:00Z"
+        activo:
+          type: boolean
+          example: true
+
+    ProviderInput:
+      type: object
+      properties:
+        id_producto:
+          type: integer
+          example: 10
+        nom_proveedor:
+          type: string
+          example: "Dicer"
+        precio_proveedor:
+          type: number
+          format: float
+          example: 1500.50
+        activo:
+          type: boolean
+          example: true
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "ERR_NOT_FOUND"
+        message:
+          type: string
+          example: "El proveedor solicitado no existe."
+      required:
+        - code
+        - message
