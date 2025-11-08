@@ -25,6 +25,5 @@ import { enviroments } from './common/infrastructure/config/enviroments';
     }),
   ],
   controllers: [],
-  providers: [],
 })
 export class AppModule {}
