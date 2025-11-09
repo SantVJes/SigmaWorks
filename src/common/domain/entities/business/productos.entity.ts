@@ -10,6 +10,13 @@ export enum Divisa {
 }
 export class Productos extends BaseEntity {
   @ApiProperty({
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    description: 'Id público que se va a mostrar en frontend',
+  })
+  @Column({ type: 'uuid', unique: true, default: () => 'gen_random_uuid()' })
+  publicId: string; // UUID público para frontend
+
+  @ApiProperty({
     example: 'RS0201052',
     description: 'Identificador del producto en la database del cliente',
   })

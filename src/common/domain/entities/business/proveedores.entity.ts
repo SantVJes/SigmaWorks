@@ -6,6 +6,13 @@ import { BaseEntity, Productos } from '../entity-index';
 @Entity('proveedores')
 export class Proveedores extends BaseEntity {
   @ApiProperty({
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    description: 'Id público que se va a mostrar en frontend',
+  })
+  @Column({ type: 'uuid', unique: true, default: () => 'gen_random_uuid()' })
+  publicId: string; // UUID público para frontend
+
+  @ApiProperty({
     type: () => [Productos],
     description: 'Productos que ofrece este proveedor',
   })
