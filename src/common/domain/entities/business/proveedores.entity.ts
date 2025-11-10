@@ -3,6 +3,11 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { BaseEntity, Productos } from '../entity-index';
 
+enum Divisa {
+  MXN = 'MXN',
+  USD = 'USD',
+  EUR = 'EUR',
+}
 @Entity('proveedores')
 export class Proveedores extends BaseEntity {
   @ApiProperty({
@@ -37,8 +42,19 @@ export class Proveedores extends BaseEntity {
     scale: 5,
     nullable: false,
   })
+  @ApiProperty({
+    example: 'MXN',
+    description: 'Divisa en la que está expresado el precio (MXN o USD)',
+    enum: Divisa,
+  })
   precio_proveedor: number;
-
+  @Column({
+    name: 'currency',
+    type: 'enum',
+    enum: Divisa,
+    default: Divisa.MXN,
+  })
+  currency: Divisa;
   @ApiProperty({
     example: true,
     description: 'El estado del proveedor si le compramos todavia o no',
